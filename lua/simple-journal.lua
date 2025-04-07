@@ -70,7 +70,7 @@ local function apply_sjournal_highlights(bufnr)
   end
 end
 
-vim.api.nvim_create_autocmd("FileType", {
+api.nvim_create_autocmd("FileType", {
   pattern = "sjournal",
   callback = function()
     vim.opt_local.foldmethod = 'indent'
@@ -81,7 +81,7 @@ vim.api.nvim_create_autocmd("FileType", {
 
 local when_ft = { "BufRead", "BufNewFile"}
 for _, event in ipairs(when_ft) do
-  vim.api.nvim_create_autocmd("BufNewFile", {
+  api.nvim_create_autocmd("BufNewFile", {
       pattern = "*.sjournal",
       command = "set filetype=sjournal"
     })
@@ -89,7 +89,7 @@ end
 
 local when_apply = { "BufRead", "BufNewFile", "BufWritePost", "TextChanged" , "TextChangedI", "TextChangedP" }
 for _, event in ipairs(when_apply) do
-  vim.api.nvim_create_autocmd(event, {
+  api.nvim_create_autocmd(event, {
     pattern = "*.sjournal",
     callback = function()
       local bufnr = api.nvim_get_current_buf()
@@ -105,7 +105,7 @@ local function create_sjournal_file()
   local full_path = vim.fn.expand('%:p:h') .. '/' .. filename
   vim.fn.mkdir(year, 'p')
   if vim.fn.filereadable(full_path) == 1 then
-    vim.api.nvim_err_writeln('Error: File ' .. full_path .. ' already exists!')
+    api.nvim_err_writeln('Error: File ' .. full_path .. ' already exists!')
     return
   end
   vim.cmd('edit ' .. full_path)
@@ -120,9 +120,9 @@ local function create_sjournal_file()
 end
 
 local function run_sjournal_action()
-  local line = vim.api.nvim_get_current_line()
-  local col = vim.api.nvim_win_get_cursor(0)[2]
-  local current_buf_path = vim.api.nvim_buf_get_name(0)
+  local line = api.nvim_get_current_line()
+  local col = api.nvim_win_get_cursor(0)[2]
+  local current_buf_path = api.nvim_buf_get_name(0)
   local current_dir = vim.fn.fnamemodify(current_buf_path, ":h")
   for start_pos, tag, end_pos in line:gmatch("()%[%[(.-)%]%]()") do
     if col >= start_pos - 1 and col <= end_pos - 1 then
@@ -132,5 +132,11 @@ local function run_sjournal_action()
   end
 end
 
-vim.api.nvim_create_user_command('SJournalNewMonth', create_bujo_file, {})
-vim.api.nvim_create_user_command('SJournalAction', run_bujo_action, {})
+local function setup() 
+  api.nvim_create_user_command('SJournalNew', create_sjournal_file, {})
+  api.nvim_create_user_command('SJournalAction', run_sjournal_action, {})
+end
+
+return {
+  setup = setup,
+}
